@@ -1,0 +1,116 @@
+详解ajax为什么会发送预检请求(OPTIONS)
+
+背景：最近在做项目的时候使用 axios 发送跨域请求时，会发现有些请求在请求之前先发送了一个 options 请求，也就是预检请求。  
+前提条件  
+必须是复杂的跨域请求
+特别注意：以 vue 项目为例，不能在配置文件中配置代理（即 proxy 属性），不然不会出现跨域的情况。将跨域问题交给服务器来处理。
+什么是跨域请求？
+这里就不多赘述，可以参考这里 点击跳转链接  
+什么是复杂跨域请求？
+简单的跨域请求，必须同时满足以下的三个条件    
+
+请求方式是以下三个其中之一：
+
+
+HEAD
+
+
+GET
+
+
+POST
+ 
+
+
+
+HTTP的头信息不超出以下五个字段：
+
+
+Accept
+
+
+Accept-Language
+
+
+Content-Language
+
+
+Last-Event-ID
+
+
+Content-Type
+ 
+
+
+
+Content-Type 的值是以下三个其中之一：
+
+
+application/x-www-form-urlencoded
+
+
+multipart/form-data
+
+
+text/plain
+
+
+
+
+  
+复杂的跨域请求，条件满足以下三个其中之一：
+
+请求方式不是 HEAD 、GET 或 POST  
+Content-Type 取的值不是以下三个之一：
+
+
+application/x-www-form-urlencoded
+
+
+multipart/form-data
+
+
+text/plain
+
+
+
+
+不能自定义 header 字段（最常见的就是自定义加了token、Cookie）  
+
+预检请求
+
+使用 delete 发送预检请求
+
+ts 代码解读复制代码export function apiDelete(url) {
+  return axios.delete(url);
+}
+
+
+
+2. 使用 Content-Type 发送预检请求
+js 代码解读复制代码export function apiPost(url) {
+  return axios.post(url, JSON.stringify({}), {
+    headers: { "Content-Type": "application/json" },
+  });
+} 
+
+
+
+3. 使用 自定义请求头 发送预检请求
+js 代码解读复制代码export function apiGet(url) {
+  return axios.get(url, {
+    headers: { token: "token" },
+  });
+}
+
+
+
+为什么会发送预检请求
+非简单请求的 CORS 请求，会在正式通信之前，增加一次 HTTP 查询请求，称为 预检请求。
+需预检的请求要求必须首先使用 OPTIONS 方法发起一个预检请求到服务器，以获知服务器是否允许该实际请求。预检请求 的使用，可以避免跨域请求对服务器的用户数据产生未预期的影响。
+
+
+作者：周老头
+链接：https://juejin.cn/post/7273803674789494823
+来源：稀土掘金
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
